@@ -107,6 +107,7 @@ app.get('/getRecipes', async (req, res) => {
     const coutIngridients = req.query.coutIngridients ? parseInt(req.query.coutIngridients) : undefined;
     const search = req.query.search || undefined;
     const ingredients = req.query.ingredients || undefined;
+    const sortTime = req.query.sortTime || undefined;
 
 
     console.log(skip, 'skip')
@@ -141,12 +142,24 @@ app.get('/getRecipes', async (req, res) => {
       query.$and.push({ name: { $regex: search, $options: 'i' } });
     }
 
+    
+
     if (time) {
 
-      query.$and.push({ time: { 
-        $gte: time - 5,
-        $lte: time 
-      }});
+      if(time === 91){
+        query.$and.push({
+          time: {
+            $gte: time
+          }
+        })
+      }else{
+        query.$and.push({ time: { 
+          $gte: time - 5,
+          $lte: time 
+        }});
+      }
+
+      
       console.log(time, 'time')
     }
     if (calories) {
@@ -171,7 +184,7 @@ app.get('/getRecipes', async (req, res) => {
       .find(query)
       .skip(skip)
       .limit(limit)
-      .sort(coutIngridients ? {} : ingredients ? { ingredients_count: 1 } : { })
+      .sort(coutIngridients ? {} : ingredients ? { ingredients_count: 1 } : { }).sort(sortTime === 'true' ? {time : 1} : {})
       .toArray();
     
     res.send(result);
